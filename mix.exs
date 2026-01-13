@@ -17,10 +17,7 @@ defmodule GleamTest.MixProject do
       # Gleam setup modifications
       archives: [mix_gleam: "~> 0.6"],
       compilers: [:gleam, :phoenix_live_view | Mix.compilers()],
-      aliases: [
-        # Or add this to your aliases function
-        "deps.get": ["deps.get", "gleam.deps.get"]
-      ] ++ aliases(),
+      aliases: aliases(),
       erlc_paths: [
         "build/dev/erlang/#{@app}/_gleam_artefacts",
         # For Gleam < v0.25.0
@@ -98,6 +95,16 @@ defmodule GleamTest.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
+      "deps.get": [
+        "deps.get",
+
+        ## By default, `mix setup` will fail to compile gleam_stdlib on the first run from a clean environment.
+        #"gleam.deps.get",
+
+        # Hack fix: Use a shell command to acquire Gleam dependencies. Afterward, `mix setup` succeeds from a clean
+        # environment with this configuration.
+        "cmd mix gleam.deps.get",
+      ],
       setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
