@@ -1,17 +1,34 @@
 defmodule GleamTest.MixProject do
   use Mix.Project
 
+  @app :gleam_test
+  @version "0.1.0"
+
   def project do
     [
-      app: :gleam_test,
-      version: "0.1.0",
+      app: @app,
+      version: @version,
       elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
-      aliases: aliases(),
       deps: deps(),
-      compilers: [:phoenix_live_view] ++ Mix.compilers(),
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+
+      # Gleam setup modifications
+      archives: [mix_gleam: "~> 0.6"],
+      compilers: [:gleam, :phoenix_live_view | Mix.compilers()],
+      aliases: [
+        # Or add this to your aliases function
+        "deps.get": ["deps.get", "gleam.deps.get"]
+      ] ++ aliases(),
+      erlc_paths: [
+        "build/dev/erlang/#{@app}/_gleam_artefacts",
+        # For Gleam < v0.25.0
+        "build/dev/erlang/#{@app}/build"
+      ],
+      erlc_include_path: "build/dev/erlang/#{@app}/include",
+      # For Elixir >= v1.15.0
+      prune_code_paths: false,
     ]
   end
 
@@ -65,7 +82,11 @@ defmodule GleamTest.MixProject do
       {:gettext, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+
+      # Gleam dependencies
+      {:gleam_stdlib, "~> 0.34 or ~> 1.0"},
+      {:gleeunit, "~> 1.0", only: [:dev, :test], runtime: false},
     ]
   end
 
